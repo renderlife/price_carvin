@@ -1,0 +1,18 @@
+.Header {
+    --header-height: 80px;
+}
+
+.HeaderWithLogoExample {
+    margin-bottom: var(--space-3xl);
+
+    & .HeaderMenu {
+        &-Link {
+            line-height: var(--header-height);
+        }
+
+        &-List {
+            margin-bottom: 0;
+            padding-left: 0;
+        }
+    }
+}

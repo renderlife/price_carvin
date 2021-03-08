@@ -1,25 +1,19 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import { Theme, myPresetDefault } from './themes/Theme/Theme';
+import styles from './styles/styles.module.sass';
+import Content from './components/Content/Content';
+import { BrowserRouter as Router, Route } from "react-router-dom";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Theme preset={myPresetDefault}>
+        <div className={styles.container}>
+          <Route path="/" exact component={Content} />
+        </div>
+      </Theme>
+    </Router>
   );
 }
 
