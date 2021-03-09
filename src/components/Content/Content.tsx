@@ -47,6 +47,7 @@ const columns: TableColumn<{
     {
         title: 'Наименование услуги',
         accessor: 'title',
+        width: 550,
     },
     {
         title: 'Цена от',
@@ -92,7 +93,7 @@ class Content extends Component<RouteComponentProps, State> {
         return menuItems.map(item => {
             return {
                 ...item,
-                active: !hash || hash === item.href
+                active: (!hash && item.href === '#passenger-car') || hash === item.href
             }
         })
     }
@@ -101,7 +102,7 @@ class Content extends Component<RouteComponentProps, State> {
         const hash = this?.props?.location?.hash
         const activeItem = menuItems.find(item => item.href === hash)
 
-        return activeItem?.label || ''
+        return activeItem?.label || 'Легковой'
     }
 
     renderAddButton = () => {
