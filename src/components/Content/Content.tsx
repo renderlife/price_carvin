@@ -11,7 +11,7 @@ import { Text } from '@consta/uikit/Text';
 import { Table, TableColumn } from '@consta/uikit/Table';
 import { Button } from '@consta/uikit/Button';
 import { IconAdd } from '@consta/uikit/IconAdd';
-import { PropsWithHTMLAttributes } from '../../utils/types/PropsWithHTMLAttributes';
+import { IconRestart } from '@consta/uikit/IconRestart';
 
 const cnExample = cn('HeaderWithLogoExample');
 const menuItems = [
@@ -38,7 +38,7 @@ const columns: TableColumn<{
     price: string;
     time: string;
     desc: string;
-    //action: JSX.Element;
+    action: JSX.Element;
   }>[] = [
     {
         title: 'Категория',
@@ -65,14 +65,15 @@ const columns: TableColumn<{
         title: 'Примечание',
         accessor: 'desc',
     },
-    /*{
+    {
         title: 'Действие',
         accessor: 'action',
-    },*/
+    },
 ];
 
 interface State {
     searchQuery: string | null
+    cartValue: number
 }
 
 class Content extends Component<RouteComponentProps, State> {
@@ -80,7 +81,8 @@ class Content extends Component<RouteComponentProps, State> {
         super(props)
 
         this.state = {
-            searchQuery: ''
+            searchQuery: '',
+            cartValue: 0
         }
     }
 
@@ -105,12 +107,23 @@ class Content extends Component<RouteComponentProps, State> {
         return activeItem?.label || 'Легковой'
     }
 
-    renderAddButton = () => {
+    addCart = (priceFrom: string, price: string) => {
+        const value = price ? parseInt(price) : parseInt(priceFrom)
+
+        this.setState({ cartValue: this.state.cartValue + value })
+    }
+
+    clearCart = () => {
+        this.setState({ cartValue: 0 })
+    }
+
+    renderAddButton = (priceFrom: string | undefined, price: string | undefined) => {
         return (
             <Button
                 view="ghost"
-                size="xs"
+                size="s"
                 iconLeft={IconAdd}
+                onClick={() => this.addCart(priceFrom || '', price || '')}
             />
         )
     }
@@ -140,7 +153,7 @@ class Content extends Component<RouteComponentProps, State> {
                     price,
                     time,
                     desc,
-                    button: this.renderAddButton()
+                    action: this.renderAddButton(o.priceFrom, o.price)
                 }
             })
 
@@ -148,7 +161,7 @@ class Content extends Component<RouteComponentProps, State> {
     }
 
     render() {
-        const { searchQuery } = this.state
+        const { searchQuery, cartValue } = this.state
         const tabs = this.getTabs()
         const rows = this.getRows()
 
@@ -172,6 +185,22 @@ class Content extends Component<RouteComponentProps, State> {
                             </HeaderModule>
                             <HeaderModule indent="l">
                                 <HeaderMenu items={tabs} />
+                            </HeaderModule>
+                        </>
+                    }
+                    rightSide={
+                        <>
+                            <HeaderModule indent="l">
+                                <Text size="m">{`Итого: ${cartValue} ₽`}</Text>
+                            </HeaderModule>
+                            <HeaderModule indent="m">
+                                <Button
+                                    view="ghost"
+                                    size="s"
+                                    iconLeft={IconRestart}
+                                    onClick={() => this.clearCart()}
+                                    label="Очистить"
+                                />
                             </HeaderModule>
                         </>
                     }
