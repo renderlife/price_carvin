@@ -10,7 +10,7 @@ function App() {
     <Router>
       <Theme preset={myPresetDefault}>
         <div className={styles.container}>
-          <Route path="/" exact component={Content} />
+          <Content />
         </div>
       </Theme>
     </Router>

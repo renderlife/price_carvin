@@ -3,7 +3,8 @@
 }
 
 .HeaderWithLogoExample {
-    margin-bottom: var(--space-3xl);
+    margin-bottom: var(--space-xl);
+    padding: 0 var(--space-s);
 
     & .HeaderMenu {
         &-Link {
