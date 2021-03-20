@@ -1,0 +1,32 @@
+.HeaderWithLogoExample {
+    margin-bottom: var(--space-xl);
+    --header-height: 80px;
+
+    & .HeaderMenu {
+        &-Link {
+            line-height: var(--header-height);
+            &_active {
+                &::before {
+                    background-color: #F39000;
+                }
+            }
+        }
+
+        &-List {
+            margin-bottom: 0;
+            padding-left: 0;
+        }
+    }
+}
+
+.redButton {
+    background-color: #ff7f7f;
+}
+
+.cartButton {
+    margin-left: 15px;
+}
+
+.Sidebar-Window_position_top {
+    max-height: 550px !important;
+}

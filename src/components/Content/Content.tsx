@@ -1,19 +1,28 @@
 import React, { Component } from 'react'
 import priceData from '../../data/price.json'
-import { cn } from '../../utils/bem';
-import { ReactComponent as CarvinLogo } from '../../images/logo_carvin.svg';
-import { Header, HeaderModule, HeaderLogo, HeaderSearchBar, HeaderMenu } from '@consta/uikit/Header';
-import { SearchBarPropOnChange } from '@consta/uikit/__internal__/src/components/Header/SearchBar/HeaderSearchBar';
-import styles from '../../styles/styles.module.sass';
+import { cn } from '../../utils/bem'
+import { ReactComponent as CarvinLogo } from '../../images/logo_carvin.svg'
+import { Header, HeaderModule, HeaderLogo, HeaderSearchBar, HeaderMenu } from '@consta/uikit/Header'
+import { SearchBarPropOnChange } from '@consta/uikit/__internal__/src/components/Header/SearchBar/HeaderSearchBar'
+import styles from '../../styles/styles.module.sass'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
-import '../../styles/HeaderWithLogoExample.css';
-import { Text } from '@consta/uikit/Text';
-import { Table, TableColumn } from '@consta/uikit/Table';
-import { Button } from '@consta/uikit/Button';
-import { IconAdd } from '@consta/uikit/IconAdd';
-import { IconRestart } from '@consta/uikit/IconRestart';
 
-const cnExample = cn('HeaderWithLogoExample');
+import '../../styles/HeaderWithLogoExample.scss'
+import '../../styles/SidebarExample.scss'
+
+import { Text } from '@consta/uikit/Text'
+import { Table, TableColumn } from '@consta/uikit/Table'
+import { Button } from '@consta/uikit/Button'
+import { Sidebar } from '@consta/uikit/Sidebar'
+
+import { IconAdd } from '@consta/uikit/IconAdd'
+import { IconRestart } from '@consta/uikit/IconRestart'
+import { IconListNumbered } from '@consta/uikit/IconListNumbered'
+import { IconTrash } from '@consta/uikit/IconTrash'
+
+const cnHeaderWithLogoExample = cn('HeaderWithLogoExample');
+const cnSidebarExample = cn('SidebarExample');
+
 const menuItems = [
     {
         label: 'Легковой',
@@ -74,6 +83,8 @@ const columns: TableColumn<{
 interface State {
     searchQuery: string | null
     cartValue: number
+    isOpenCart: boolean
+    cartIds: string[]
 }
 
 class Content extends Component<RouteComponentProps, State> {
@@ -82,7 +93,9 @@ class Content extends Component<RouteComponentProps, State> {
 
         this.state = {
             searchQuery: '',
-            cartValue: 0
+            cartValue: 0,
+            isOpenCart: false,
+            cartIds: []
         }
     }
 
@@ -107,35 +120,76 @@ class Content extends Component<RouteComponentProps, State> {
         return activeItem?.label || 'Легковой'
     }
 
-    addCart = (priceFrom: string, price: string) => {
+    addCart = (priceFrom: string, price: string, id: string) => {
+        const { cartIds } = this.state
+        const value = price ? parseInt(price) : parseInt(priceFrom)
+        const newCartIds = [...cartIds, id]
+
+        this.setState({ cartValue: this.state.cartValue + value, cartIds: newCartIds })
+    }
+
+    deleteCart = (priceFrom: string, price: string, id: string) => {
+        const updateCartIds = this.state.cartIds.filter(item => item !== id)
         const value = price ? parseInt(price) : parseInt(priceFrom)
 
-        this.setState({ cartValue: this.state.cartValue + value })
+        this.setState({ cartValue: this.state.cartValue - value, cartIds: updateCartIds })
     }
 
     clearCart = () => {
-        this.setState({ cartValue: 0 })
+        this.setState({ cartValue: 0, cartIds: [] })
     }
 
-    renderAddButton = (priceFrom: string | undefined, price: string | undefined) => {
+    openCart = () => {
+        this.setState({ isOpenCart: !this.state.isOpenCart })
+    }
+
+    renderAddButton = (priceFrom: string | undefined, price: string | undefined, id: string) => {
         return (
             <Button
                 view="ghost"
                 size="s"
                 iconLeft={IconAdd}
-                onClick={() => this.addCart(priceFrom || '', price || '')}
+                onClick={() => this.addCart(priceFrom || '', price || '', id)}
             />
         )
     }
 
+    renderDeleteButton = (priceFrom: string | undefined, price: string | undefined, id: string) => {
+        return (
+            <Button
+                view="ghost"
+                size="s"
+                iconLeft={IconTrash}
+                onClick={() => this.deleteCart(priceFrom || '', price || '', id)}
+                className='redButton'
+            />
+        )
+    }
+
+    getPriceDataWithId = () => {
+        return priceData.map((item, index) => {
+            const id = (++index).toString()
+            return ({
+                id,
+                ...item
+            })
+        })
+    }
+
     getRows = () => {
+        const { cartIds } = this.state
         const searchQueryLower = this.state.searchQuery ? this.state.searchQuery.toLowerCase() : null
-        const rawRows = priceData
+        const rawRows = this.getPriceDataWithId()
         const activeClassAutoName = this.activeClassAutoName()
 
         const rows = rawRows
             .filter(o => o.classAuto === activeClassAutoName || !activeClassAutoName)
-            .filter(o => searchQueryLower === null || o.title.toLowerCase().includes(searchQueryLower) )
+            .filter(o => {
+                const titleForSearch = o.synonyms + ' ' + o.title
+                return (
+                    searchQueryLower === null || titleForSearch.toLowerCase().includes(searchQueryLower)
+                )
+            })
             .map((o, i) => {
                 const category = o.category ? o.category : 'Без категории'
                 const title = o.title ? o.title : 'Без наименования'
@@ -143,17 +197,49 @@ class Content extends Component<RouteComponentProps, State> {
                 const price = o.price ? o.price : '-'
                 const time = o.time ? o.time : '-'
                 const desc = o.desc ? o.desc : '-'
-                const index = i + 1
+                const id = o.id.toString()
+                const readOnly = cartIds.includes(id) ? true : false
 
                 return {
-                    id: index.toString(),
+                    id,
                     category,
                     title,
                     priceFrom,
                     price,
                     time,
                     desc,
-                    action: this.renderAddButton(o.priceFrom, o.price)
+                    action: readOnly ? this.renderDeleteButton(o.priceFrom, o.price, id) : this.renderAddButton(o.priceFrom, o.price, id)
+                }
+            })
+
+        return rows || []
+    }
+
+    getCartRows = () => {
+        const { cartIds } = this.state
+        const rawRows = this.getPriceDataWithId()
+        console.log('rawRows :>> ', rawRows)
+        const rawRowsCart = rawRows.filter(item => cartIds.includes(item.id))
+
+        const rows = rawRowsCart
+            .map(o => {
+                const category = o.category ? o.category : 'Без категории'
+                const title = o.title ? o.title : 'Без наименования'
+                const priceFrom = o.priceFrom ? o.priceFrom : '-'
+                const price = o.price ? o.price : '-'
+                const time = o.time ? o.time : '-'
+                const desc = o.desc ? o.desc : '-'
+                const id = o.id.toString()
+
+                return {
+                    id,
+                    category,
+                    title,
+                    priceFrom,
+                    price,
+                    time,
+                    desc,
+                    action: this.renderDeleteButton(o.priceFrom, o.price, id)
                 }
             })
 
@@ -161,14 +247,15 @@ class Content extends Component<RouteComponentProps, State> {
     }
 
     render() {
-        const { searchQuery, cartValue } = this.state
+        const { searchQuery, cartValue, isOpenCart } = this.state
         const tabs = this.getTabs()
         const rows = this.getRows()
+        const rowsCart = this.getCartRows()
 
         return (
             <>
                 <Header
-                    className={cnExample()}
+                    className={cnHeaderWithLogoExample()}
                     leftSide={
                         <>
                             <HeaderModule indent="s">
@@ -202,6 +289,15 @@ class Content extends Component<RouteComponentProps, State> {
                                     label="Очистить"
                                 />
                             </HeaderModule>
+                            <HeaderModule indent="m">
+                                <Button
+                                    size="s"
+                                    view="ghost"
+                                    label="Корзина"
+                                    onClick={() => this.openCart()}
+                                    iconLeft={IconListNumbered}
+                                />
+                            </HeaderModule>
                         </>
                     }
                 />
@@ -210,6 +306,41 @@ class Content extends Component<RouteComponentProps, State> {
                     rows={rows}
                     emptyRowsPlaceholder={<Text>Данные не найдены</Text>}
                 />
+                <Sidebar
+                    className={cnSidebarExample('Sidebar')}
+                    isOpen={isOpenCart}
+                    onOverlayClick={() => this.openCart()}
+                    position="top"
+                    height="auto"
+                >
+                    <Sidebar.Content className={cnSidebarExample('Content')}>
+                    <Text
+                        as="p"
+                        size="l"
+                        view="primary"
+                        weight="semibold"
+                        className={cnSidebarExample('Title')}
+                    >
+                        Выбранные услуги
+                    </Text>
+                    <Table
+                        columns={columns}
+                        rows={rowsCart}
+                        emptyRowsPlaceholder={<Text>Данные не найдены</Text>}
+                    />
+                    </Sidebar.Content>
+                    <Sidebar.Actions className={cnSidebarExample('Actions')}>
+                        <Text size="m">{`Итого: ${cartValue} ₽`}</Text>
+                        <Button
+                            className='cartButton'
+                            size="m"
+                            view="ghost"
+                            label="Закрыть"
+                            width="default"
+                            onClick={() => this.openCart()}
+                        />
+                    </Sidebar.Actions>
+                </Sidebar>
             </>
         )
     }

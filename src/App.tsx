@@ -3,7 +3,7 @@ import './App.css';
 import { Theme, myPresetDefault } from './themes/Theme/Theme';
 import styles from './styles/styles.module.sass';
 import Content from './components/Content/Content';
-import { BrowserRouter as Router, Route } from "react-router-dom";
+import { BrowserRouter as Router } from "react-router-dom";
 
 function App() {
   return (
