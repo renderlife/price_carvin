@@ -30,3 +30,21 @@
 .Sidebar-Window_position_top {
     max-height: 550px !important;
 }
+
+// Medium devices (tablets, 768px and up)
+@media (max-width: 767.98px) {
+    .HeaderWithLogoExample {
+        display: flex;
+        flex-direction: column;
+        --header-height: auto;
+        padding: 0 var(--space-s);
+        & .Header-LeftSide {
+            display: flex;
+            flex-direction: column;
+        }
+        & .Header-RightSide {
+            display: flex;
+            flex-direction: column;
+        }
+    }
+}

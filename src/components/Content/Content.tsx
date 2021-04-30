@@ -8,6 +8,7 @@ import styles from '../../styles/styles.module.sass'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 
 import '../../styles/HeaderWithLogoExample.scss'
+import '../../styles/TableExample.scss'
 import '../../styles/SidebarExample.scss'
 
 import { Text } from '@consta/uikit/Text'
@@ -21,6 +22,7 @@ import { IconListNumbered } from '@consta/uikit/IconListNumbered'
 import { IconTrash } from '@consta/uikit/IconTrash'
 
 const cnHeaderWithLogoExample = cn('HeaderWithLogoExample');
+const cnTableExample = cn('TableExample');
 const cnSidebarExample = cn('SidebarExample');
 
 const menuItems = [
@@ -302,6 +304,7 @@ class Content extends Component<RouteComponentProps, State> {
                     }
                 />
                 <Table
+                    className={cnTableExample()}
                     columns={columns}
                     rows={rows}
                     emptyRowsPlaceholder={<Text>Данные не найдены</Text>}
