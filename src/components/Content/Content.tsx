@@ -201,7 +201,7 @@ class Content extends Component<RouteComponentProps, State> {
                 const desc = o.desc ? o.desc : '-'
                 const id = o.id.toString()
                 const readOnly = cartIds.includes(id) ? true : false
-
+ 
                 return {
                     id,
                     category,
