@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
-import priceData from '../../data/price.json'
 import { cn } from '../../utils/bem'
 import { ReactComponent as CarvinLogo } from '../../images/logo_carvin.svg'
-import { Header, HeaderModule, HeaderLogo, HeaderSearchBar, HeaderMenu } from '@consta/uikit/Header'
+import { Header, HeaderModule, HeaderLogo, HeaderSearchBar } from '@consta/uikit/Header'
 import { SearchBarPropOnChange } from '@consta/uikit/__internal__/src/components/Header/SearchBar/HeaderSearchBar'
 import styles from '../../styles/styles.module.sass'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
+import API from '../../services/API'
 
 import '../../styles/HeaderWithLogoExample.scss'
 import '../../styles/TableExample.scss'
@@ -24,22 +24,6 @@ import { IconTrash } from '@consta/uikit/IconTrash'
 const cnHeaderWithLogoExample = cn('HeaderWithLogoExample');
 const cnTableExample = cn('TableExample');
 const cnSidebarExample = cn('SidebarExample');
-
-const menuItems = [
-    {
-        label: 'Легковой',
-        active: true,
-        href: '#passenger-car',
-    },
-    {
-        label: 'Кроссовер',
-        href: '#crossover'
-    },
-    {
-        label: 'Внедорожник',
-        href: '#off-road'
-    },
-];
 
 const columns: TableColumn<{
     id: string;
@@ -87,6 +71,7 @@ interface State {
     cartValue: number
     isOpenCart: boolean
     cartIds: string[]
+    priceData: any[]
 }
 
 class Content extends Component<RouteComponentProps, State> {
@@ -97,29 +82,20 @@ class Content extends Component<RouteComponentProps, State> {
             searchQuery: '',
             cartValue: 0,
             isOpenCart: false,
-            cartIds: []
+            cartIds: [],
+            priceData: []
         }
+    }
+
+    componentDidMount() {
+        return API.request('price/', 'GET')
+            .then((data) => {
+                this.setState({ priceData: data.data })
+            })
     }
 
     handleSearchInput: SearchBarPropOnChange = ({ value }) => {
         this.setState({ searchQuery: value })
-    }
-
-    getTabs = () => {
-        const hash = this.props.location.hash
-        return menuItems.map(item => {
-            return {
-                ...item,
-                active: (!hash && item.href === '#passenger-car') || hash === item.href
-            }
-        })
-    }
-
-    activeClassAutoName = () => {
-        const hash = this?.props?.location?.hash
-        const activeItem = menuItems.find(item => item.href === hash)
-
-        return activeItem?.label || 'Легковой'
     }
 
     addCart = (priceFrom: string, price: string, id: string) => {
@@ -168,24 +144,11 @@ class Content extends Component<RouteComponentProps, State> {
         )
     }
 
-    getPriceDataWithId = () => {
-        return priceData.map((item, index) => {
-            const id = (++index).toString()
-            return ({
-                id,
-                ...item
-            })
-        })
-    }
-
     getRows = () => {
-        const { cartIds } = this.state
+        const { cartIds, priceData } = this.state
         const searchQueryLower = this.state.searchQuery ? this.state.searchQuery.toLowerCase() : null
-        const rawRows = this.getPriceDataWithId()
-        const activeClassAutoName = this.activeClassAutoName()
 
-        const rows = rawRows
-            .filter(o => o.classAuto === activeClassAutoName || !activeClassAutoName)
+        const rows = Object.values(priceData)
             .filter(o => {
                 const titleForSearch = o.synonyms + ' ' + o.title
                 return (
@@ -201,7 +164,7 @@ class Content extends Component<RouteComponentProps, State> {
                 const desc = o.desc ? o.desc : '-'
                 const id = o.id.toString()
                 const readOnly = cartIds.includes(id) ? true : false
- 
+
                 return {
                     id,
                     category,
@@ -218,10 +181,8 @@ class Content extends Component<RouteComponentProps, State> {
     }
 
     getCartRows = () => {
-        const { cartIds } = this.state
-        const rawRows = this.getPriceDataWithId()
-        console.log('rawRows :>> ', rawRows)
-        const rawRowsCart = rawRows.filter(item => cartIds.includes(item.id))
+        const { cartIds, priceData } = this.state
+        const rawRowsCart = Object.values(priceData).filter(item => cartIds.includes(item.id))
 
         const rows = rawRowsCart
             .map(o => {
@@ -250,7 +211,6 @@ class Content extends Component<RouteComponentProps, State> {
 
     render() {
         const { searchQuery, cartValue, isOpenCart } = this.state
-        const tabs = this.getTabs()
         const rows = this.getRows()
         const rowsCart = this.getCartRows()
 
@@ -271,9 +231,6 @@ class Content extends Component<RouteComponentProps, State> {
                                     value={searchQuery}
                                     onChange={this.handleSearchInput}
                                 />
-                            </HeaderModule>
-                            <HeaderModule indent="l">
-                                <HeaderMenu items={tabs} />
                             </HeaderModule>
                         </>
                     }
